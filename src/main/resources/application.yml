@@ -1,0 +1,11 @@
+#Config application port
+server:
+  port: 9080
+  
+#Config log
+logging:
+  level:
+    root: INFO
+    com.example.spring.boot.practise: DEBUG
+  file: C:/Prueba Tecnica/prueba_tecnica.log
+

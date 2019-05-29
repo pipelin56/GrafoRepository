@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<title th:text="${tittlePage}"></title>
+	
+	<!-- Style -->
+	<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet" media="screen">
+	
+	<!-- Javascript -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+</head>
+<body>
+	<header class="mb-5">
+		<nav th:fragment="menu" class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+			<a class="navbar-brand" href="/">Prueba Tecnica!</a>
+			<button class="navbar-toggler" type="button" data-toggle="collapse"
+				data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup"
+				aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+				<div class="navbar-nav">
+					<a class="nav-item nav-link" th:href="@{/inicio}" th:text="#{menu.home}"> </a> 
+				</div>
+			</div>
+		</nav>
+	</header>
+	<div class="container d-flex justify-content-center py-5">
+	 <div class="jumbotron mb-5">
+		  <h1 class="display-3">Bienvenido!</h1>
+		  <p class="lead mt-5">En esta aplicación web podrá consultar los costes de las rutas que especifíque
+		  			  a partir de un grafo!</p>
+		  <hr class="my-2">
+		  <h2 class="display-5">¿Cómo funciona?</h2>
+		  
+		  <p>Sencillo! Sigue estos pasos: </p>
+		  <ul class="list-group">
+			  <li class="list-group-item"><span class="font-weight-bold">1</span>. Especifica tu gráfo en el primer campo del formulario de más abajo. 
+			  		<p class="text-muted ml-3">Es importante que siga un formato para el gráfo tal que así: AB5-BC9-CD7-AC4...</p>
+			  </li>
+			  <li class="list-group-item"><span class="font-weight-bold">2</span>. Especifica las rutas que necesites saber. Tediremos cuanto te costará llegar.
+			  	 <p class="text-muted ml-3">Es importante que siga un formato para la ruta tal que así:</p>
+			  	 <p class="text-muted ml-3">A-B-C,</p>
+			  	 <p class="text-muted ml-3">A-C-B,</p>
+			  	 <p class="text-muted ml-3">A-D,</p>
+			  	 <p class="text-muted ml-3">...</p>
+			  	 <p class="text-muted ml-3">Básicamente es listar las rutas que quiera conocer separadas por coma. 
+			  	 Cada ruta equivale a los vertices separados por '-'.</p>
+			  </li>
+			  <li class="list-group-item"><span class="font-weight-bold">3</span>. El último paso es pulsar el botón de envío y te mostraremos la información ;-)
+				  <p class="text-muted  ml-3">Recuerda, es importante que cumplas con los formato!</p>
+			  </li>
+		  </ul>
+		   <hr class="my-2">
+		   
+		   <div class="d-flex justify-content-center my-5">
+				<form  class="col-md-12" novalidate >
+					<div class="form-row">
+						<div class="form-group col-md-12">
+							<label th:text="#{form.grafo}"></label> 
+							<input type="text" class="form-control" id="grafo"  required maxlength="50"/>
+						</div>
+					</div>
+					<div class="form-row">
+						<div class="form-group col-md-12">
+							<label th:text="#{form.ruta}"></label> 
+							<textarea class="form-control" rows="5" id="rutas" required maxlength="50"></textarea>
+						</div>
+					</div>
+				</form>
+			</div>
+		   
+		    <hr class="my-2">
+		  <p class="lead">
+		    <a class="btn btn-primary btn-lg"  id="bntCalcular" role="button">Dale caña!</a>
+		  </p>
+	</div>
+	
+	
+	<div class="modal fade" id="modalResultado" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog modal-lg" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title" id="idTituloOk">Aquí tienes tu resultado =)</h5>
+	        <h5 class="modal-title" id="idTitulokO">Vaya... parece que ha habido un problema!</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body" id="idBodySuccesfull">
+	        
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+	
+	
+	</div>
+	
+	<script>
+	
+	$(document).ready(function(){
+		$("#bntCalcular").click(function(){
+			var data = {};
+			data["grafo"] = $("#grafo").val();
+			data["listaRutasGrafos"] = $("#rutas").val().replace(/(\r\n|\n|\r)/gm, "").split(",");
+			$.ajax({
+				type : "POST",
+				contentType : "application/json",
+				url : "[[@{/calcular}]]",
+				data : JSON.stringify(data),
+				dataType : 'json',
+				timeout : 100000,
+				success : function(data) {
+					if(data){
+						if(data.mensaje == null){
+							$("#idTituloOk").show();
+							$("#idTitulokO").hide();
+							var grafo = " <span class=\"font-weight-bold\" > Grafo input: </span>"+data.grafo+"<br><br>";
+							var listaRutas = "<ul>";
+							data.listaRutasCosteSolicitadas.forEach(function(ruta) {
+								 listaRutas += " <li> <span class=\"font-weight-bold\" > Ruta: </span>"+ ruta.ruta +" con distancia: "+ruta.coste+"</li> ";
+							});
+							listaRutas += "</ul>"
+							$("#idBodySuccesfull").html(grafo + listaRutas);
+							
+							abrirModal($("#modalResultado"));
+						}else{
+							$("#idTituloOk").hide();
+							$("#idTitulokO").show();
+							abrirModal($("#modalResultado"));
+							var grafo = " <span class=\"font-weight-bold\" > Grafo input: </span>"+data.grafo+"<br><br>";
+							var mensaje= " <span class=\"font-weight-bold\" > Problema: </span>"+data.mensaje+"<br><br>";
+							$("#idBodySuccesfull").html(grafo + mensaje);
+						}
+						
+					}else{
+						alert("error");
+					}
+				},
+				error : function(e) {
+				}
+			});
+		})
+	})
+	
+	function cerrarModal(modal){
+	modal.modal('toggle');
+	}
+	
+	function abrirModal(modal){
+		modal.modal('show');
+	}
+
+	
+	</script>
+</body>
+</html>
