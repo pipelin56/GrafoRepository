@@ -73,11 +73,16 @@ public class OperacionesGrafosFloydServiceImpl implements OperacionesGrafosFloyd
 		
 		Integer coste = 0;
 		List<String> listaVerticesLetras = Arrays.asList(ruta.split("-"));
+		
+		if(listaVerticesLetras.size() == 1)
+			return Constantes.NO_RUTA_VALIDA;
+		
 		//Validamos que sea una ruta con el formato que queremos
 		for(String letra : listaVerticesLetras) {
 			if(letra.length() != 1 || !Character.isLetter(letra.charAt(0)))
 				return Constantes.NO_RUTA_VALIDA;
 		}
+		
 		
 		int numVertices = listaVerticesLetras.size();
 		Integer arrVertices[] = new Integer[numVertices];
